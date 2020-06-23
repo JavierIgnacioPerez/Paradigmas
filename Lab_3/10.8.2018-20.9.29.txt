@@ -1,0 +1,64 @@
+BeginDialog
+10.8.2018-20.5.36
+Usuario
+...
+Chatbot
+Buenas Noches. Bienvenido al sistema de venta de autos, Cual es su nombre?
+C
+---
+SendMessage
+10.8.2018-20.5.43
+Usuario
+Mi nombre es Javier
+Chatbot
+Javier, En que le puedo ayudar?
+C
+---
+SendMessage
+10.8.2018-20.7.2
+Usuario
+Quiero comprar un auto
+Chatbot
+Javier, En este momento puedo vender estos autos: Ford, Toyota, Peugeot.
+C
+---
+SendMessage
+10.8.2018-20.7.5
+Usuario
+Comprar Ford
+Chatbot
+Javier, Los modelos que tengo disponible son: Fiesta, Mustang, FordRaptor.
+C
+---
+SendMessage
+10.8.2018-20.7.17
+Usuario
+Comprar Yaris
+Chatbot
+Javier, No puede elegir un modelo de la Marca Toyota, su elección de marca fue Ford
+I
+---
+SendMessage
+10.8.2018-20.7.22
+Usuario
+Comprar Mustang
+Chatbot
+Javier, Su seleccion es : Marca -> Ford y Modelo -> mustang
+C
+---
+SendMessage
+10.8.2018-20.7.27
+Usuario
+Finalizar compra
+Chatbot
+Javier, Su compra se ha realizado exitosamente
+C
+---
+EndDialog
+10.8.2018-20.9.29
+Usuario
+...
+Chatbot
+Javier. Ha sido un gusto ayudarlo, espero que vuelva en otra ocasion.
+C
+---

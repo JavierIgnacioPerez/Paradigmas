@@ -1,0 +1,738 @@
+#lang racket
+
+;TDA message
+;REPRESENTACION Lista.
+;Lista compuesta por 4 elementos (excepto la primera y la ultima).
+   ;Los elementos son: ID, FECHA Y HORA, MENSAJE DE USUARIO, RESPUESTA DE CHATBOT Y VERIFICADOR MENSAJE (SI LA RESPUESTA FUE CORRECTA O NO).
+   ;La primera y la ultima sub-listas tendra mensaje del usuario equivalente al delimitador , dependiendo si se trata del primero o el ultimo mensaje.
+
+;CONSTRUCTOR
+
+;Funcion constructora de TDA menssage.
+;Integer id, String dateTime, String userMsg, String botMsg -> Lista que contiene la informacion de los parametros entregados.
+;No hay recursion.
+(define (message id dateTime userMsg botMsg vrMsg)
+  (if (number? id)
+      (if (and (string? dateTime) (string? userMsg) (string? botMsg) (string? vrMsg))
+          (if (eq? "" userMsg)
+              (append (list id) (list dateTime) (list botMsg))
+              (append (list id) (list dateTime) (list userMsg) (list botMsg) (list vrMsg))
+              )
+          null
+          )
+      null
+      )
+  )
+
+;FUNCION DE PERTENENCIA
+
+;Funcion de pertenencia del TDA message.
+;List message -> Bool #t si message respeta el formato establecido en el tda, #f en caso contrario.
+;No hay recursion.
+(define (message? message)
+  (if (list? message)
+      (if (null? message)
+          #t
+          (if (= (length message) 5)
+              (if (number? (car message))
+                  (message? (cdr message))
+                  #f
+                  )
+              (if (string? (car message))
+                  (message? (cdr message))
+                  #f
+                  )
+              )
+          )
+      #f
+      )
+  )
+
+;SELECTORES
+
+;Funcion que obtiene el mensaje del bot.
+;List message -> String con el mensaje del bot.
+;No hay recursion.
+(define (message-getBot message)
+  (if (message? message)
+      (if (= (length message) 5)
+          (cadddr message)
+          null
+          )
+      null
+      )
+  )
+
+;Funcion que obtiene el mensaje del usuario.
+;List message -> String con el mensaje del usuario.
+;No hay recursion.
+(define (message-getUser message)
+  (if (message? message)
+      (if (= (length message) 5)
+          (caddr message)
+          null
+          )
+      null
+      )
+  )
+
+;Funcion que obtiene la verificacion del mensaje.
+;List message-> String con el mensaje de verificacion.
+;No hay recursion.
+(define (message-getVer message)
+  (if (message? message)
+      (if (= (length message) 5)
+          (cadddr (cdr message))
+          null
+          )
+      null
+      )
+  )
+
+;MODIFICADORES
+     ;En este caso no son necesarias funciones modificadoras del TDA.
+
+;FUNCIONES QUE OPERAN SOBRE EL TDA
+     ;En este caso no son necesarias funciones que operan sobre el TDA.
+
+;------------------------------------------------------------------------------------------------------------
+
+;TDA log
+;REPRESENTACION : Listas de listas.
+
+;Lista compuestas de listas (hasta n sub-listas, depende de la conversascion),
+;donde cada sublista es un mensaje del TDA message.
+
+;CONSTRUCTOR
+;Funcion que construye el TDA log.
+;List list que puede estar vacia o con contenido, dependiendo de la entrada -> List con la misma informacion.
+;No hay recursion.
+(define (log listN)
+  (if (list? listN)
+      listN
+      null
+      )
+  )
+
+;FUNCION DE PERTENENCIA
+;Funcion de pertenencia del TDA log.
+;List log -> Bool #t si log respeta el formato dado en el tda, #f en caso contrario.
+;Recursion de cola.
+(define (log? log)
+ (if (list? log)
+     (if (null? log)
+         #t
+         (if(message? (car log))
+            (log? (cdr log))
+            #f
+            )
+         )
+     #f
+     )
+  )
+
+;SELECTORES
+
+;Funcion que dado un numero y un log, retorna el mensaje en la posicion especificada.
+;List log, Integer num -> List message en el indice especificado en num.
+;Recursion de cola.
+(define (log-getMessage log num)
+  (if (and (list? log) (number? num))
+      (if (= num 1)
+          (car log)
+          (log-getMessage (cdr log) num)
+          )
+      null
+      )
+  )
+
+;MODIFICADORES
+
+;Funcion que dada una lista log y un mensaje, retorna una lista log actualizada con el nuevo mensaje.
+;List log, List msg -> List log actualizada.
+;No hay recursion.
+(define (log-setLog logN msg)
+  (if (and (log? logN) (message? msg))
+      (log (append logN (list msg)))
+      logN
+      )
+  )
+
+;FUNCIONES QUE OPERAN SOBRE EL TDA
+
+;Funcion que inicia el dialogo.
+;List chatbot, List log, Integer seed  -> List log.
+;No hay recursión.
+(define (beginDialog chatbot log seed)
+  (if(chatbot? chatbot)
+     (if (log? log)
+         (if (number? seed)
+             (log-setLog log (message (random seed) (actualDateTime) "BeginDialog" (string-append(selectSl chatbot) " " (chatbot-getExpl chatbot)) "#C"))
+             null
+             )
+         null
+         )
+     null
+     )
+  )
+
+
+;Funcion que termina el dialogo.
+;List chatbot, List log, Integer seed  -> List log.
+;No hay recursión.
+(define (endDialog chatbot log seed)
+  (if(chatbot? chatbot)
+     (if (log? log)
+         (if (number? seed)
+             (log-setLog log (message (random seed) (actualDateTime) "EndDialog" (chatbot-getBye chatbot) "#C"))
+             null
+             )
+         null
+         )
+     null
+     )
+  )
+
+
+
+
+;Funcion que permite al usuario enviar mensajes al chatbot.
+;String msg, List chatbot, List log, Integer seed -> List log.
+;No hay recursion.
+(define (sendMessage msg chatbot log seed)
+  (if (cmpDelay (listToLower (string-split msg " ")))
+      (log-setLog log (message (random seed) (actualDateTime) msg delayedDialog "#C"))
+      (if (cmpForce (listToLower (string-split msg " ")))
+          (log-setLog log (message (random seed) (actualDateTime) msg forceDialog "#C"))
+          null
+          )
+      )
+  )
+
+
+;Funcion que verifica si existe un delimitador BeginDialog
+;List log -> Bool #t si el log contiene el delimitador BeginDialog, #f caso en caso contrario.
+;Recursion de cola.
+(define (verifyStart log)
+  (if (log? log)
+      (if (null? log)
+          #f
+          (if(eq? (message-getUser (car log)) "BeginDialog")
+             #t
+             (verifyEnd (cdr log))
+             )
+          )
+      #f
+      )
+  )
+
+;Funcion que verifica si existe un delimitador EndDialog
+;List log -> Bool #t si el log contiene el delimitador EndDialog, #f caso en caso contrario.
+;Recursion de cola.
+(define (verifyEnd log)
+  (if (log? log)
+      (if (null? log)
+          #f
+          (if(eq? (message-getUser (car log)) "EndDialog")
+             #t
+             (verifyEnd (cdr log))
+             )
+          )
+      #f
+      )
+  )
+
+;Funcion que dado un log, contabiliza las respuestas buenas por parte del bot.
+;List log, Integer cont -> Integer que contiene la cantidad de respuestas buenas.
+;Recursion de cola.
+(define (getCorrect log cont)
+  (if (log? log)
+      (if (null? log)
+          cont
+          (if (eq? (message-getVer (car log)) "#C")
+              (getCorrect (cdr log) (+ cont 1))
+              (getCorrect (cdr log) cont)
+              )
+          )
+      -1
+      )
+  )
+
+;Funcion que dada las respuestas correctas contenidas en un log, entrega una nota final.
+;List log -> Integer que representa la nota final del Bot.
+;No hay recursion.
+(define (getScore log)
+  (if (and (> (getCorrect log 0) 6) (< (getCorrect log 0) 99))
+      5
+      (if (and (> (getCorrect log 0) 3) (<= (getCorrect log 0) 5))
+          4
+          (if (and (> (getCorrect log 0) 2) (<= (getCorrect log 0) 3))
+              3
+              (if (and (> (getCorrect log 0) 1) (<= (getCorrect log 0) 2))
+                  2
+                  (if (= (getCorrect log 0) 1)
+                      1
+                      (if (= (getCorrect log 0) 0)
+                          0
+                          0
+                          )
+                      )
+                  )
+              )
+          )
+      )
+  )
+
+;------------------------------------------------------------------------------------------------------------
+
+;TDA chatbot
+;REPRESENTACION : Lista de listas de listas.
+
+;Lista compuesto por personalidad y vocabulario.
+;1ra lista es una lista de listas, en donde se contiene la personalidad del chatbot.
+     ;1ra sub-lista personalidad del chatbot.
+;2da lista es una lista de listas, en donde cada lista tendra las distintas palabras y/o oraciones que tiene el bot.
+     ;1ra sub-lista contiene los saludos.
+     ;2da sub-lista contiene las respuestas del Bot.
+     ;3ra sub-lista contiene las marcas de auto que tiene el bot.
+     ;4ta - 6ta sub-lista contiene los distintos modelos de autos dependiendo de la marca, ordenados respectivamente segun la 3ra sub-listas
+;Era lista es una lista de listas, en donde se contienen los scores del bot.
+     ;1ra sub-lista scores del bot.
+
+
+;CONSTRUCTOR
+(define chatbotFormal
+  '('('("Formal")) '('("Buenos días." "Buenas tardes." "Buenas noches.")'("Bienvenido al sistema de venta de autos, ¿Cual es su nombre?" "¿En que le puedo ayudar?" "En este momento puedo vender estos autos: " "Los modelos que tengo disponible son: " "Porfavor, espere un momento mientras se procesa su compra..." "Su compra se ha realizado con exito." "Ha sido un gusto ayudarlo, espero que vuelva." "Disculpe, ¿Lo puede decir de otra manera?") '("Ford" "Toyota" "Peugeot") '("Fiesta" "Mustang" "Ford Raptor") '("Yaris" "Auris" "Corolla") '("301" "2008" "206")) '(-1)))
+  
+
+;FUNCION DE PERTENENCIA
+
+;Funcion de pertenencia del TDA chatbot.
+;List chatbot -> Bool #t si se respeta la estructrua del TDA, #f caso contrario.
+;Recursion de cola.
+(define (chatbot? chatbot)
+   (if (list? chatbot)
+      (if (null? chatbot)
+          #t
+          (if (= (length chatbot) 1)
+              (if (allNumbers (cadar chatbot))
+                  #t
+                  chatbot
+                  )
+              (if(allStrings (cdr(car chatbot)))
+                 (chatbot? (cdr chatbot))
+              #f
+              )
+              )
+          )
+      null
+      )
+   )
+
+;SELECTORES
+
+;Funcion que retorna la personalidad del bot.
+;List chatbot -> String con la personalidad.
+;No hay recursion
+(define (chatbot-getPers chatbot)
+  (if (chatbot? chatbot)
+      (caar(cdr(caar(cdar chatbot))))
+      null
+      )
+  )
+;Funcion que retorna el vocabulario del bot.
+;List chatbot -> Lista de listas con el vocabulario.
+;No hay recursion
+(define (chatbot-getVoc chatbot)
+  (if (chatbot? chatbot)
+       (cadr(car(cdr chatbot)))
+       null
+       )
+  )
+
+;Funcion que retorna los scores del bot.
+;List chatbot -> Lista de listas con los scores.
+;No hay recursion
+(define (chatbot-getScore chatbot)
+  (if (chatbot? chatbot)
+       (cadr(car(cddr chatbot)))
+       null
+       )
+  )
+
+
+;Funcion que retorna la funcionalidad del bot.
+;List chatbot -> String con la explicacion.
+;No hay recursión.
+(define (chatbot-getExpl chatbot)
+  (if (chatbot? chatbot)
+      (caar(cdr(car(cdr(chatbot-getVoc chatbot)))))
+      null
+      )
+  )
+
+;Funcion que retorna la primera pregunta hacia el usuario.
+;List chatbot -> String con la pregunta.
+;No hay recursión.
+(define (chatbot-getServ chatbot)
+  (if (chatbot? chatbot)
+      (cadr(car(cdr(car(cdr(chatbot-getVoc chatbot))))))
+      null
+      )
+  )
+
+;Funcion que retorna el mensaje de lo que puede vender el bot.
+;List chatbot -> String con la respuesta.
+;No hay recursión.
+(define (chatbot-getSell chatbot)
+  (if (chatbot? chatbot)
+      (caddr(car(cdr(car(cdr(chatbot-getVoc chatbot))))))
+      null
+      )
+  )
+
+;Funcion que retorna el mensaje de los modeos de auto que puede vender el bot.
+;List chatbot -> String con la respuesta.
+;No hay recursión.
+(define (chatbot-getSellB chatbot)
+  (if (chatbot? chatbot)
+      (cadddr(car(cdr(car(cdr(chatbot-getVoc chatbot))))))
+      null
+      )
+  )
+
+
+;Funcion que retorna el mensaje del delay.
+;List chatbot -> String con el mensaje del delay.
+;No hay recursión.
+(define (chatbot-getDelay chatbot)
+  (if (chatbot? chatbot)
+      (cadddr(cdr(car(cdr(car(cdr(chatbot-getVoc chatbot)))))))
+      null
+      )
+  )
+
+;Funcion que retorna el mensaje del force.
+;List chatbot -> String con el mensaje del force.
+;No hay recursión.
+(define (chatbot-getForce chatbot)
+  (if (chatbot? chatbot)
+      (cadddr(cddr(car(cdr(car(cdr(chatbot-getVoc chatbot)))))))
+      null
+      )
+  )
+
+
+;Funcion que retorna el mensaje de despedida.
+;List chatbot -> String con la respuesta.
+;No hay recursión.
+(define (chatbot-getBye chatbot)
+  (if (chatbot? chatbot)
+      (cadddr(cdddr(car(cdr(car(cdr(chatbot-getVoc chatbot)))))))
+      null
+      )
+  )
+
+;Funcion que retorna el mensaje cuando el bot no entiende.
+;List chatbot -> String con la respuesta.
+;No hay recursión.
+(define (chatbot-getNotU chatbot)
+  (if (chatbot? chatbot)
+      (cadddr(cddddr(car(cdr(car(cdr(chatbot-getVoc chatbot)))))))
+      null
+      )
+  )
+
+
+;Funcion que retorna la marcas de autos que vende el bot.
+;List chatbot -> String con las marcas.
+;No hay recursión.
+(define (chatbot-getBrands chatbot)
+  (if (chatbot? chatbot)
+      (cadr(caddr(chatbot-getVoc chatbot)))
+      null
+      )
+  )
+
+;Funcion que retorna los modelos de auto segun un modelo.
+;List chatbot, String marca -> Lista String con modelos
+;No hay recursion
+(define (chatbot-getModels brand chatbot)
+  (if (chatbot? chatbot)
+      (if (eq? brand "Ford")
+          (car(cdar(cdddr(chatbot-getVoc chatbot))))
+          (if (eq? brand "Toyota")
+              (car(cdar(cddddr (chatbot-getVoc chatbot))))
+              (if(eq? brand "Peugeot")
+                 (car(cdar(cdr(cddddr (chatbot-getVoc chatbot)))))
+                 null
+                 )
+              )
+          )
+      null
+      )
+  )
+
+;MODIFICADORES
+
+;Funcion que dado un chatbot, un log y una funcion que da un puntaje (rendimiento del bot), retorna el chatbot con los nuevos valores de score.
+;Chatbot chatbot, Log log, Metrica f, Integer Score -> Chatbot chatbot con la lista de score actualizada.
+;No hay recursion.
+(define (rate chatbot score f log)
+  (if (chatbot? chatbot)
+      (if (log? log)
+          (if (integer? score)
+              (if (verifyEnd log)
+                  (if (= (car(chatbot-getScore chatbot)) -1)
+                      (append (list (list (chatbot-getPers chatbot))) (list (list (chatbot-getVoc chatbot))) (list (append (list score) (list (f log)))))
+                      (append (list (list (chatbot-getPers chatbot))) (list (list (chatbot-getVoc chatbot))) (list (append (chatbot-getScore chatbot) (list score) (list (f log)))))
+                      )
+                  chatbot
+                  )
+              chatbot
+              )
+          chatbot
+          )
+      chatbot
+      )
+  )
+
+
+;FUNCIONES QUE OPERAN SOBRE EL TDA
+
+;Funcion que determina el saludo según la hora.
+;List chatbot -> String con el saludo.
+;No hay recursión.
+(define (selectSl chatbot)
+  (if (chatbot? chatbot)
+      (if (and (>= (actualHour) 6) (< (actualHour) 12))
+          (caadar (chatbot-getVoc chatbot))
+          (if (and (>= (actualHour) 12) (< (actualHour) 18))
+              (cadr(cadar (chatbot-getVoc chatbot)))
+              (caddr(cadar(chatbot-getVoc chatbot)))
+              )
+          )
+      null
+      )
+  )
+
+;----------------------------------------------------------------------------------------------------------
+
+;Funcion que recibe una lista y devuelve un string con el contenido de la lista.
+;List list -> String con el contenido de la lista.
+;Recursion lineal.
+(define (stringList list)
+  (if(null? list)
+     ""
+     (if (= (length list) 1)
+         (string-append (car list) "." (stringList (cdr list)))
+         (string-append (car list) ", " (stringList (cdr list)))
+         )
+     )
+  )
+
+;Funcion que genera un numero aleatorio mediante una semilla.
+;Integer seed -> Integer con numero random.
+;No hay recursion.
+(define (random seed)
+  (remainder (+ (* 1103515245 seed) 12345) 2147483648)
+  )
+
+;Funcion que obtiene el dia actual.
+;Void -> String con el dia actual.
+;No hay recursión.
+(define (actualDay)
+  (let ((date (seconds->date (current-seconds))))
+  (date-day date))
+  )
+
+;Funcion que obtiene el mes actual.
+;Void -> String con el mes actual.
+;No hay recursión.
+(define (actualMonth)
+  (let ((date (seconds->date (current-seconds))))
+  (date-month date))
+  )
+
+;Funcion que obtiene el año actual.
+;Void -> String con el año actual.
+;No hay recursión.
+(define (actualYear)
+  (let ((date (seconds->date (current-seconds))))
+  (date-year date))
+  )
+
+;Funcion que obtiene la fecha actual.
+;Void -> String con la fecha actual.
+;No hay recursión.
+(define (actualDate)
+  (string-append (number->string(actualDay)) "/" (number->string(actualMonth)) "/" (number->string(actualYear)))
+  )
+
+;Funcion que obtiene la hora actual.
+;Void -> String con la hora actual.
+;No hay recursión.
+(define (actualHour)
+  (let ((date (seconds->date (current-seconds))))
+  (date-hour date))
+  )
+
+;Funcion que obtiene los minutos actuales.
+;Void -> String con los minutos actuales.
+;No hay recursión.
+(define (actualMinute)
+  (let ((date (seconds->date (current-seconds))))
+  (date-minute date))
+  )
+
+;Funcion que obtiene los segundos actuales.
+;Void -> String con los segundos actuales.
+;No hay recursión.
+(define (actualSeconds)
+  (let ((date (seconds->date (current-seconds))))
+  (date-second date))
+  )
+
+;Funcion que obtiene la hora completa actual.
+;Void -> String con la hora completa actual.
+;No hay recursión.
+(define (actualTime)
+  (string-append (number->string(actualHour)) ":" (number->string(actualMinute)) ":" (number->string(actualSeconds)))
+  )
+
+;Funcion que obtiene la hora y la fecha actual.
+;Void -> String con la hora y fecha actual.
+;No hay recursión.
+(define (actualDateTime)
+  (string-append (actualTime) " " "-" " " (actualDate))
+  )
+
+;Funcion que dada una lista de strings, devuelve una lista que contiene los mismos strings pero en minusculas.
+;List phrase -> List con las palabras en minusculas.
+;Recursion lineal.
+(define (listToLower phrase)
+  (if (list? phrase)
+      (if (null? phrase)
+          '()
+          (append (list (string-downcase(car phrase))) (listToLower (cdr phrase)))
+          )
+      null
+      )
+  )
+
+;Funcion que verifica si una lista esta compuesta por numeros.
+;List lista -> Bool #t si la lista es compuesta por numeros, #f en caso contrario.
+;Recursion de cola.
+(define (allNumbers listSt)
+  (if (list? listSt)
+      (if (null? listSt)
+          #t
+          (if (number? (car listSt))
+              (allNumbers (cdr listSt))
+              #f
+              )
+          )
+      null
+      )
+  )
+
+;Funcion que verifica si una lista esta compuesta por strings.
+;List lista -> Bool #t si la lista es compuesta por strings, #f en caso contrario.
+;Recursion de cola.
+(define (allStrings listSt)
+  (if (list? listSt)
+      (if (null? listSt)
+          #t
+          (if (string? (caar(cdr(caar listSt))))
+              (allStrings (cdr listSt))
+              #f
+              )
+          )
+      null
+      )
+  )
+
+;Funcion que dada una lista de strings y una palabra, verifica si dicha palabra existe en la lista.
+;List phrase, String word -> Bool #t si se encuentra la palabra, #f en caso contrario.
+;Recursion de cola.
+(define (verifyWord phrase word)
+  (if (list? phrase)
+      (if (null? phrase)
+          #f
+          (if (string=? (car phrase) word)
+              #t
+              (verifyWord (cdr phrase) word)
+              )
+          )
+      null
+      )
+  )
+
+;Funcion que dada una lista de strings y una lista de strings, verifica si una palabra de la primera lista se encuentra en la segunda lista.
+;List phrase, List wordPhrase -> Bool #t si hay coincidencia, #f en caso contrario.
+;Recursion de cola.
+(define (inList phrase wordPhrase)
+  (if (list? phrase)
+      (if (null? wordPhrase)
+          #f
+          (if (verifyWord phrase (car wordPhrase))
+              #t
+              (inList phrase (cdr wordPhrase))
+              )
+          )
+      null
+      )
+  )
+
+;Funcion que retorna el string de que la compra fue realizada exitosamente.
+;NULL -> String respuesta.
+;No hay recursion.
+(define (confirmDialog)
+  (display  "Compra realizada exitosamente")
+  )
+
+;Funcion que provoca el delay de una funcion.
+;Funcion f -> Promise de la funcion f.
+;No hay recursion
+(define delayedDialog
+  (delay confirmDialog)
+  )
+
+;Funcion que provoca el force de una funcion.
+;Funcion f -> Resultado del delay de la funcion f.
+;No hay recursion
+(define (forceDialog phrase)
+  (if (inList phrase '("forzar" "compra"))
+      (force delayedDialog)
+      null
+      )
+  )
+
+
+;Funcion que verifica si una frase esta dentro de una lista de palabras dada.
+;List phrase -> Bool #t si la alguna palabra de la frase se encuentra en la lista dada, #f caso contrario.
+;No hay recursion.
+(define (cmpDelay phrase)
+  (if (list? phrase)
+      (if (inList phrase '("realizar" "compra"))
+          #t
+          #f
+          )
+      #f
+      )
+  )
+
+;Funcion que verifica si una frase esta dentro de una lista de palabras dada.
+;List phrase -> Bool #t si la alguna palabra de la frase se encuentra en la lista dada, #f caso contrario.
+;No hay recursion.
+(define (cmpForce phrase)
+  (if (list? phrase)
+      (if (inList phrase '("forzar" "compra"))
+          #t
+          #f
+          )
+      #f
+      )
+  )
+
+;---------------------------------------------------------------------------------------------------

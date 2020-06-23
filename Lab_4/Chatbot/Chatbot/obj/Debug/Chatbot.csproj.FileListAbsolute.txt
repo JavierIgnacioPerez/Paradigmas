@@ -1,0 +1,11 @@
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.csprojAssemblyReference.cache
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.Properties.Resources.resources
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.csproj.GenerateResource.cache
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.csproj.CoreCompileInputs.cache
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\bin\Debug\Chatbot.exe.config
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\bin\Debug\Chatbot.exe
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\bin\Debug\Chatbot.pdb
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.exe
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.pdb
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.FrontEnd.Views.ChatbotView.resources
+C:\Users\caper\Downloads\Usach\Paradigmas\Laboratorio\Lab4\Chatbot\Chatbot\obj\Debug\Chatbot.FrontEnd.Views.RateView.resources

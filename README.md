@@ -1,1 +1,1 @@
-Paradigmas
+Respaldo de los laboratorios del curso Paradigmas de la Programación.

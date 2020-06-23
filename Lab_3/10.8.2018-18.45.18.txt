@@ -1,0 +1,24 @@
+BeginDialog
+10.8.2018-18.45.9
+Usuario
+...
+Chatbot
+Buenas Tardes. Bienvenido al sistema de venta de autos, ¿Cual es su nombre?
+C
+---
+SendMessage
+10.8.2018-18.45.15
+Usuario
+Mi nombre es Javier
+Chatbot
+Javier, ¿En que le puedo ayudar?
+C
+---
+EndDialog
+10.8.2018-18.45.18
+Usuario
+...
+Chatbot
+Javier. Ha sido un gusto ayudarlo, espero que vuelva en otra ocasión.
+C
+---
